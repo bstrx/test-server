@@ -7,20 +7,22 @@ use MyServer\Core\Controller;
 class UserController extends Controller
 {
     /**
-     * Expected array example:
-     * user => [
-     *     info => [
+     * Returns common user's info like money and level and key/value properties
+     *
+     * Request example:
+     * 'user' => [
+     *     'info' => [
      *         'money'
      *         'level'
      *     ],
-     *     properties => [
+     *     'properties' => [
      *         'customPropertyKey',
      *         'anotherKey'
      *     ]
      * ]
      *
      * @param Request $request
-     * @return array|void
+     * @return array same as request, but with values for requested keys
      */
     public function getInfoAction(Request $request)
     {
@@ -29,26 +31,41 @@ class UserController extends Controller
             return;
         }
 
-        $usedId = $request->get('id');
-        if (!$usedId) {
+        $userId = $request->get('id');
+        if (!$userId) {
             return;
         }
 
         $result = ['user' => []];
 
         if (!empty($userRequest['info']) && is_array($userRequest['info'])) {
-            $result['user']['info'] = $this->getInfo($usedId, $userRequest['info']);
+            $cacheKey = $this->getUserInfoCacheKey($userId);
+            $userInfo = $this->getMemcached()->get($cacheKey);
+            if (!$userInfo) {
+                $userInfo = $this->getInfo($userId, $userRequest['info']);
+                $this->getMemcached()->set($cacheKey, $userInfo);
+            }
+
+            $result['user']['info'] = $userInfo;
         }
 
         if (!empty($userRequest['properties']) && is_array($userRequest['properties'])) {
-            $result['user']['properties'] =  $this->getProperties($usedId, $userRequest['properties']);
+            $cacheKey = $this->getUserPropertyCacheKey($userId);
+            $userProperties = $this->getMemcached()->get($cacheKey);
+            if (!$userProperties) {
+                $userProperties = $this->getProperties($userId, $userRequest['properties']);
+                $this->getMemcached()->set($cacheKey, $userProperties);
+            }
+            $result['user']['properties'] = $userProperties;
         }
 
         return $result;
     }
 
     /**
-     * Expected array example:
+     * Updates user's info and key/value properties
+     *
+     * Request example:
      * user => [
      *     info => [
      *         'money' => 1600,
@@ -84,6 +101,8 @@ class UserController extends Controller
     }
 
     /**
+     * Returns user info according to the given list
+     *
      * @param int $userId
      * @param array $requiredInfo
      * @return array
@@ -96,6 +115,8 @@ class UserController extends Controller
         foreach ($requiredInfo as $field) {
             if (isset($userInfo[$field])) {
                 $result[$field] =  $userInfo[$field];
+            } else {
+                $result[$field] = null;
             }
         }
 
@@ -103,6 +124,8 @@ class UserController extends Controller
     }
 
     /**
+     * Returns user properties according to the given list
+     *
      * @param int $userId
      * @param array $requiredProperties
      * @return array
@@ -115,6 +138,8 @@ class UserController extends Controller
         foreach ($requiredProperties as $field) {
             if (isset($userProperties[$field])) {
                 $result[$field] =  $userProperties[$field];
+            } else {
+                $result[$field] = null;
             }
         }
 
@@ -122,6 +147,8 @@ class UserController extends Controller
     }
 
     /**
+     * Updates user's info if update of specific fields is allowed
+     *
      * @param int $userId
      * @param array $info
      */
@@ -139,10 +166,13 @@ class UserController extends Controller
 
         if ($fieldsToUpdate) {
             $this->getDb()->update('user', $fieldsToUpdate, ['id' => $userId]);
+            $this->getMemcached()->delete($this->getUserInfoCacheKey($userId));
         }
     }
 
     /**
+     * Updates/inserts user's key/value properties
+     *
      * @param int $userId
      * @param array $properties
      */
@@ -150,5 +180,24 @@ class UserController extends Controller
     {
         //TODO prepare options for saving
         $this->getDb()->insertOrUpdate('user_property', $properties, ['id' => $userId]);
+        $this->getMemcached()->delete($this->getUserPropertyCacheKey($userId));
+    }
+
+    /**
+     * @param $userId
+     * @return string
+     */
+    private function getUserInfoCacheKey($userId)
+    {
+        return 'user_info_' . $userId;
+    }
+
+    /**
+     * @param $userId
+     * @return string
+     */
+    private function getUserPropertyCacheKey($userId)
+    {
+        return 'user_property_' . $userId;
     }
 }

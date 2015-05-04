@@ -13,9 +13,13 @@ $autoloader->register();
 $session = new Session();
 $session->init();
 
+$memcached = new Memcached();
+$memcached->addServer('localhost', 11211);
+
 //allow to use service globally
 ServiceContainer::set('db', new Db('myserver', 'user', 'password'));
 ServiceContainer::set('session', $session);
+ServiceContainer::set('memcached', $memcached);
 
 $url = isset($_GET['url']) ? $_GET['url'] : '';
 $router = new Router($url);

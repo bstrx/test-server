@@ -2,11 +2,14 @@
 
 namespace MyServer\Core;
 
+use \Memcached;
+use \Exception;
+
 abstract class Controller
 {
     /**
      * @return Db
-     * @throws \Exception
+     * @throws Exception
      */
     public function getDb()
     {
@@ -15,10 +18,19 @@ abstract class Controller
 
     /**
      * @return Session
-     * @throws \Exception
+     * @throws Exception
      */
     public function getSession()
     {
         return ServiceContainer::get('session');
+    }
+
+    /**
+     * @return Memcached
+     * @throws Exception
+     */
+    public function getMemcached()
+    {
+        return ServiceContainer::get('memcached');
     }
 }
