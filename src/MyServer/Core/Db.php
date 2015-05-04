@@ -59,6 +59,13 @@ class Db
         return $preparedStatement;
     }
 
+    /**
+     * Returns all items from table
+     *
+     * @param string $tableName
+     * @param array $orderBy
+     * @return array|null
+     */
     public function fetchAll($tableName, $orderBy = [])
     {
         /** @var PDOStatement $statement */
@@ -68,6 +75,15 @@ class Db
         return $result ?: null;
     }
 
+    /**
+     * Returns result with all kinds of options
+     *
+     * @param $tableName
+     * @param $fetchOptions
+     * @param null $limit
+     * @param array $orderBy
+     * @return null
+     */
     public function fetchBy($tableName, $fetchOptions, $limit = null, $orderBy = [])
     {
         /** @var PDOStatement $statement */
@@ -80,6 +96,13 @@ class Db
         return $result ?: null;
     }
 
+    /**
+     * Returns single result
+     *
+     * @param $tableName
+     * @param $fetchOptions
+     * @return mixed|null
+     */
     public function fetchOneBy($tableName, $fetchOptions)
     {
         /** @var PDOStatement $statement */
@@ -95,12 +118,89 @@ class Db
     }
 
     /**
+     * Deletes data
+     *
+     * @param string $tableName
+     * @param array $deleteOptions
+     */
+    public function delete($tableName, $deleteOptions = [])
+    {
+        $sql = "DELETE FROM $tableName";
+        $optionValues = [];
+
+        if ($deleteOptions) {
+            list($optionKeys, $optionValues) = $this->prepareKeyValues($deleteOptions);
+            $sql .= " WHERE " . implode(' AND ', $optionKeys);
+        }
+
+        return $this->execute($sql, $optionValues);
+    }
+
+    /**
+     * Inserts data
+     *
+     * @param string $tableName
+     * @param array $insertOptions
+     * @return array
+     */
+    public function insert($tableName, $insertOptions)
+    {
+        $optionKeys = array_keys($insertOptions);
+        $optionValues = array_values($insertOptions);
+        $valuesCount = count($optionValues);
+        $bindArray = [];
+        for($i = 0; $i < $valuesCount; $i++ ) {
+            $bindArray[] = '?';
+        }
+        $keys = implode(', ', $optionKeys);
+        $values = implode(', ', $bindArray);
+        $sql = "INSERT INTO $tableName ($keys) VALUES($values) ";
+
+        return $this->execute($sql, $optionValues);
+    }
+
+    /**
+     * Updates data
+     *
+     * @param string $tableName
+     * @param array $newValues
+     * @param array $conditions
+     */
+    public function update($tableName, array $newValues, array $conditions = [])
+    {
+        list($updateKeys, $updateValues) = $this->prepareKeyValues($newValues);
+        $values = implode(', ', $updateKeys);
+        $sql = "UPDATE $tableName SET $values";
+        $conditionValues = [];
+
+        if ($conditions) {
+            list($conditionKeys, $conditionValues) = $this->prepareKeyValues($conditions);
+            $condition = implode(' AND ', $conditionKeys);
+            $sql .= " WHERE $condition";
+        }
+
+        return $this->execute($sql, array_merge($updateValues, $conditionValues));
+    }
+
+    /**
+     * @param $tableName
+     * @param array $newValues
+     * @param array $conditions
+     */
+    public function insertOrUpdate($tableName, array $newValues, array $conditions = [])
+    {
+        //TODO
+    }
+
+    /**
+     * Returns statement that can be used by different fetch methods
+     *
      * @param string $tableName
      * @param array $fetchOptions
      * @param integer $limit
      * @return array
      */
-    public function getStatement($tableName, $fetchOptions = [], $limit = null, $orderBy = [])
+    private function getStatement($tableName, $fetchOptions = [], $limit = null, $orderBy = [])
     {
         $whereCondition = '';
         $optionValues = [];
@@ -127,75 +227,8 @@ class Db
     }
 
     /**
-     * @param string $tableName
-     * @param array $deleteOptions
-     */
-    public function delete($tableName, $deleteOptions = [])
-    {
-        $sql = "DELETE FROM $tableName";
-        $optionValues = [];
-
-        if ($deleteOptions) {
-            list($optionKeys, $optionValues) = $this->prepareKeyValues($deleteOptions);
-            $sql .= " WHERE " . implode(' AND ', $optionKeys);
-        }
-
-        $this->execute($sql)->execute($optionValues);
-    }
-
-    /**
-     * @param string $tableName
-     * @param array $insertOptions
-     * @return array
-     */
-    public function insert($tableName, $insertOptions)
-    {
-        $optionKeys = array_keys($insertOptions);
-        $optionValues = array_values($insertOptions);
-        $valuesCount = count($optionValues);
-        $bindArray = [];
-        for($i = 0; $i < $valuesCount; $i++ ) {
-            $bindArray[] = '?';
-        }
-        $keys = implode(', ', $optionKeys);
-        $values = implode(', ', $bindArray);
-        $sql = "INSERT INTO $tableName ($keys) VALUES($values) ";
-
-        return $this->execute($sql)->execute($optionValues);
-    }
-
-    /**
-     * @param string $tableName
-     * @param array $newValues
-     * @param array $conditions
-     */
-    public function update($tableName, array $newValues, array $conditions = [])
-    {
-        list($updateKeys, $updateValues) = $this->prepareKeyValues($newValues);
-        $values = implode(', ', $updateKeys);
-        $sql = "UPDATE $tableName SET $values";
-        $conditionValues = [];
-
-        if ($conditions) {
-            list($conditionKeys, $conditionValues) = $this->prepareKeyValues($conditions);
-            $condition = implode(' AND ', $conditionKeys);
-            $sql .= " WHERE $condition";
-        }
-
-        $this->execute($sql, array_merge($updateValues, $conditionValues));
-    }
-
-    /**
-     * @param $tableName
-     * @param array $newValues
-     * @param array $conditions
-     */
-    public function insertOrUpdate($tableName, array $newValues, array $conditions = [])
-    {
-        //TODO
-    }
-
-    /**
+     * Creates connection if it doesn't exist
+     *
      * @return PDO
      */
     private function getConnection()
@@ -208,6 +241,8 @@ class Db
     }
 
     /**
+     * Formats keys and values so they can be used as parameters
+     *
      * @param array $keyValues
      * @return array
      */

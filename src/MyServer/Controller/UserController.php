@@ -31,16 +31,13 @@ class UserController extends Controller
     {
         $userRequest = $request->get('user');
         if (!$userRequest || !is_array($userRequest)) {
-            return;
+            throw new \Exception('Invalid data format');
         }
 
+        $response = ['user' => []];
         $userId = $request->get('id');
-        if (!$userId) {
-            return;
-        }
 
-        $result = ['user' => []];
-
+        //get info
         if (!empty($userRequest['info']) && is_array($userRequest['info'])) {
             $cacheKey = $this->getUserInfoCacheKey($userId);
             $userInfo = $this->getMemcached()->get($cacheKey);
@@ -49,9 +46,10 @@ class UserController extends Controller
                 $this->getMemcached()->set($cacheKey, $userInfo);
             }
 
-            $result['user']['info'] = $userInfo;
+            $response['user']['info'] = $userInfo;
         }
 
+        //get properties
         if (!empty($userRequest['properties']) && is_array($userRequest['properties'])) {
             $cacheKey = $this->getUserPropertyCacheKey($userId);
             $userProperties = $this->getMemcached()->get($cacheKey);
@@ -59,10 +57,10 @@ class UserController extends Controller
                 $userProperties = $this->getProperties($userId, $userRequest['properties']);
                 $this->getMemcached()->set($cacheKey, $userProperties);
             }
-            $result['user']['properties'] = $userProperties;
+            $response['user']['properties'] = $userProperties;
         }
 
-        return $result;
+        return $response;
     }
 
     /**
@@ -90,10 +88,6 @@ class UserController extends Controller
         }
 
         $usedId = $request->get('id');
-        if (!$usedId) {
-            return;
-        }
-
         if (!empty($userRequest['info']) && is_array($userRequest['info'])) {
             $this->updateInfo($usedId, $userRequest['info']);
         }
