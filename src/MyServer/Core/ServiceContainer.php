@@ -3,9 +3,13 @@ namespace MyServer\Core;
 
 /**
  * Just a global registry for important core services
+ * @author Vladimir Prudilin bstrxx@gmail.com
  */
-class ServiceContainer {
-
+class ServiceContainer
+{
+    /**
+     * @var array
+     */
     private static $services = array();
 
     /**

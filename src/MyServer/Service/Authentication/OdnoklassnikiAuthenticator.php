@@ -2,7 +2,10 @@
 
 namespace MyServer\Service\Authentication;
 
-class VkontakteAuthenticator implements AuthenticationProviderInterface
+/**
+ * @author Vladimir Prudilin bstrxx@gmail.com
+ */
+class OdnoklassnikiAuthenticator implements AuthenticationProviderInterface
 {
     public function checkAuthKey($personId, $networkKey, $authKey)
     {

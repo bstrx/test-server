@@ -5,6 +5,10 @@ namespace MyServer\Core;
 use \Memcached;
 use \Exception;
 
+/**
+ * Basic controller class with quick access to common services
+ * @author Vladimir Prudilin bstrxx@gmail.com
+ */
 abstract class Controller
 {
     /**

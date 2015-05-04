@@ -1,6 +1,10 @@
 <?php
 namespace MyServer\Core;
 
+/**
+ * Contains request data for both get and post request methods
+ * @author Vladimir Prudilin bstrxx@gmail.com
+ */
 class Request
 {
     const GET_METHOD = 'GET';

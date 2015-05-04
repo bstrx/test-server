@@ -4,8 +4,8 @@ namespace MyServer\Core;
 use Exception;
 
 /**
- * @author Vladimir Prudilin
  * Converts url to controller and action
+ * @author Vladimir Prudilin bstrxx@gmail.com
  */
 class Router
 {

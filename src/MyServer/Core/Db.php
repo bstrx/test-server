@@ -6,6 +6,9 @@ use PDO;
 use PDOException;
 use PDOStatement;
 
+/**
+ * @author Vladimir Prudilin bstrxx@gmail.com
+ */
 class Db
 {
     /**

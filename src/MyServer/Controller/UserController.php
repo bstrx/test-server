@@ -4,6 +4,9 @@ namespace MyServer\Controller;
 use MyServer\Core\Request;
 use MyServer\Core\Controller;
 
+/**
+ * @author Vladimir Prudilin bstrxx@gmail.com
+ */
 class UserController extends Controller
 {
     /**

@@ -2,8 +2,8 @@
 namespace MyServer\Core;
 
 /**
- * @author Vladimir Prudilin
  * Sessions keys handling
+ * @author Vladimir Prudilin bstrxx@gmail.com
  */
 class Session
 {
