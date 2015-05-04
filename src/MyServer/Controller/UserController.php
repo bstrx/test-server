@@ -171,12 +171,39 @@ class UserController extends Controller
      * Updates/inserts user's key/value properties
      *
      * @param int $userId
-     * @param array $properties
+     * @param array $newProperties
      */
-    private function updateProperties($userId, array $properties)
+    private function updateProperties($userId, array $newProperties)
     {
-        //TODO prepare options for saving
-        $this->getDb()->insertOrUpdate('user_property', $properties, ['id' => $userId]);
+        $cacheKey = $this->getUserPropertyCacheKey($userId);
+        $userProperties = $this->getMemcached()->get($cacheKey);
+        if (!$userProperties) {
+            $userProperties = $this->getDb()->fetchBy('user_property', ['user_id' => $userId]);
+        }
+
+        //update properties that already exist
+        if ($userProperties) {
+            foreach ($userProperties as $propertyName => $propertyValue) {
+                if (isset($newProperties[$propertyName])) {
+                    $this->getDb()->update(
+                        'user',
+                        ['value' => $newProperties[$propertyName]],
+                        ['id' => $userId, ['property' => $propertyName]]
+                    );
+
+                    unset($newProperties[$propertyName]);
+                }
+            }
+        }
+
+        //add the rest
+        foreach ($newProperties as $propertyName => $propertyValue) {
+            $this->getDb()->insert(
+                'user_property',
+                ['user_id' => $userId, 'property' => $propertyName, 'value' => $propertyValue]
+            );
+        }
+
         $this->getMemcached()->delete($this->getUserPropertyCacheKey($userId));
     }
 

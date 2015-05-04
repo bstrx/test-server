@@ -183,16 +183,6 @@ class Db
     }
 
     /**
-     * @param $tableName
-     * @param array $newValues
-     * @param array $conditions
-     */
-    public function insertOrUpdate($tableName, array $newValues, array $conditions = [])
-    {
-        //TODO
-    }
-
-    /**
      * Returns statement that can be used by different fetch methods
      *
      * @param string $tableName
