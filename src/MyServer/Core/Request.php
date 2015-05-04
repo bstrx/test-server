@@ -21,16 +21,7 @@ class Request
      */
     public function __construct()
     {
-        $requestMethod = strtoupper($_SERVER['REQUEST_METHOD']);
-
-        if ($requestMethod === self::POST_METHOD) {
-            $this->method = self::POST_METHOD;
-        } elseif ($requestMethod === self::GET_METHOD) {
-            $this->method = self::GET_METHOD;
-        } else {
-            throw new \Exception('Only GET/POST methods are supported');
-        }
-
+        $this->method = strtoupper($_SERVER['REQUEST_METHOD']);
         $this->data = array_merge($_GET, $_POST);
     }
 

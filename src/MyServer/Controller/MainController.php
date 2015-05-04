@@ -8,7 +8,20 @@ class MainController extends Controller
 {
     public function indexAction(Request $request)
     {
-        $this->getDb();
-        print_r($request);
+        $data = [
+            'id' => 1,
+            'user' => [
+                'info' => ['level'],
+                'properties' => ['someProp']
+            ]
+        ];
+
+        $request = new Request();
+        $request->set($data);
+
+        $controller = new UserController();
+        $result = $controller->getInfoAction($request);
+
+        var_dump($result);
     }
 }

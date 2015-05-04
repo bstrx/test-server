@@ -23,3 +23,4 @@ $router = new Router($url);
 $request = new Request();
 $action = $router->getAction();
 $response = $router->getControllerInstance()->$action($request);
+echo json_encode($response);

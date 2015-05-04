@@ -70,6 +70,9 @@ class Db
         /** @var PDOStatement $statement */
         $statement = $this->getStatement($tableName, $fetchOptions, $limit, $orderBy);
         $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        if ($result && $limit === 1) {
+            $result = $result[0];
+        }
 
         return $result ?: null;
     }
@@ -79,8 +82,13 @@ class Db
         /** @var PDOStatement $statement */
         $statement = $this->getStatement($tableName, $fetchOptions, 1);
         $result = $statement->fetch(PDO::FETCH_ASSOC);
+        if ($result) {
+            $result = $result[0];
+        } else {
+            $result = null;
+        }
 
-        return $result ?: null;
+        return $result;
     }
 
     /**
@@ -112,7 +120,6 @@ class Db
 
         $sql = "SELECT * FROM $tableName $whereCondition $orderByCondition $limitCondition";
 
-        print_r(array_merge($optionValues, $orderByValues));
         return $this->execute($sql, array_merge($optionValues, $orderByValues));
     }
 
@@ -171,8 +178,7 @@ class Db
             $condition = implode(' AND ', $conditionKeys);
             $sql .= " WHERE $condition";
         }
-print_r($sql);
-print_r(array_merge($updateValues, $conditionValues));
+
         $this->execute($sql, array_merge($updateValues, $conditionValues));
     }
 
