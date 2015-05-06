@@ -37,4 +37,13 @@ abstract class Controller
     {
         return ServiceContainer::get('memcached');
     }
+
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public function getUser()
+    {
+        return ServiceContainer::get('session')->get('user');
+    }
 }

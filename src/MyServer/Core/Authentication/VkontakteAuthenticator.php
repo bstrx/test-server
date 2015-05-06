@@ -7,7 +7,7 @@ namespace MyServer\Service\Authentication;
  */
 class VkontakteAuthenticator implements AuthenticationProviderInterface
 {
-    public function checkAuthKey($personId, $networkKey, $authKey)
+    public function checkAuthKey($personId, $authKey)
     {
         //do something for vkontakte
 
