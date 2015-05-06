@@ -1,6 +1,6 @@
 <?php
 
-namespace MyServer\Service\Authentication;
+namespace MyServer\Core\Authentication;
 
 /**
  * @author Vladimir Prudilin bstrxx@gmail.com

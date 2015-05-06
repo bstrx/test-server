@@ -30,8 +30,10 @@ class Application
             $action = $router->getAction();
             $responseData = $router->getControllerInstance()->$action($request);
 
+            return ($responseData);
             $response = new Response($responseData);
         } catch (Exception $e){
+            return ($e->getMessage());
             $response = new Response($e->getMessage(), false);
         }
 
@@ -76,7 +78,7 @@ class Application
             ],
             'database' => [
                 'db' => 'myserver',
-                'user' => 'user',
+                'user' => 'myuser',
                 'password' => 'password'
             ]
         ];

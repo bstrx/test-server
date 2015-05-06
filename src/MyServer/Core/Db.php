@@ -108,13 +108,8 @@ class Db
         /** @var PDOStatement $statement */
         $statement = $this->getStatement($tableName, $fetchOptions, 1);
         $result = $statement->fetch(PDO::FETCH_ASSOC);
-        if ($result) {
-            $result = $result[0];
-        } else {
-            $result = null;
-        }
 
-        return $result;
+        return $result ?: null;
     }
 
     /**

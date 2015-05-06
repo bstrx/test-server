@@ -6,8 +6,6 @@ use MyServer\Core\Db;
 use MyServer\Core\Request;
 use MyServer\Core\ServiceContainer;
 use MyServer\Core\Session;
-use MyServer\Service\Authentication\OdnoklassnikiAuthenticator;
-use MyServer\Service\Authentication\VkontakteAuthenticator;
 
 /**
  * Authenticates user
@@ -71,8 +69,8 @@ class Authenticator
      */
     private function getUserFromSession()
     {
-        if (!empty($this->authData['session_id'])) {
-            $this->session->setId($this->authData['session_id']);
+        if (!empty($this->authData['sessionId'])) {
+            $this->session->setId($this->authData['sessionId']);
             $this->session->start();
 
             return $this->session->get('user');
@@ -98,7 +96,7 @@ class Authenticator
             );
 
             if ($authenticated) {
-                $user = $this->db->get('user', [
+                $user = $this->db->fetchOneBy('user', [
                     'person_id' => $this->authData['personId'],
                     'auth_key' => $this->authData['authKey']
                 ]);

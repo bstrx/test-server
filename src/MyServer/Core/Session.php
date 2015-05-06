@@ -8,6 +8,15 @@ namespace MyServer\Core;
 class Session
 {
     /**
+     * Sets session id
+     * @param $id
+     */
+    public function setId($id)
+    {
+        session_id($id);
+    }
+
+    /**
      * Returns data from session or default instead
      *
      * @param string $key
@@ -21,7 +30,7 @@ class Session
         
         return $default;
     }
-    
+
     /**
      * Inputs data to session
      *
@@ -36,10 +45,9 @@ class Session
     /**
      * Starts session if it was not already started
      */
-    public function init()
+    public function start()
     {
-        $session_id = session_id();
-        if (empty($session_id)) {
+        if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
     }

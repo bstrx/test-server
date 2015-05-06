@@ -11,22 +11,20 @@ class DemonstrationController extends Controller
 {
     public function indexAction(Request $request)
     {
-        //TODO remove users's data
         $data = [
-            'id' => 1,
+            'auth' => [
+                'sessionId' => 'some wrong session id',
+                'personId' => 'FdfsdafsaesfafFE',
+                'networkKey' => 'vk',
+                'authKey' => 'fasfkjldaskl;fjeawifjwaiofjwoijfkflsjaklfas'
+            ],
+
             'user' => [
                 'info' => ['level'],
                 'properties' => ['someProp']
             ]
         ];
 
-        $request = new Request();
-        $request->set($data);
-
-        $controller = new UserController();
-        $result = $controller->getInfoAction($request);
-
-        return $result;
     }
 
     public function updateAction(Request $request)
