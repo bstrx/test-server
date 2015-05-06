@@ -9,6 +9,7 @@ class Session
 {
     /**
      * Sets session id
+     *
      * @param $id
      */
     public function setId($id)
@@ -17,9 +18,20 @@ class Session
     }
 
     /**
+     * Returns session id
+     *
+     * @return string
+     */
+    public function getId()
+    {
+        return session_id();
+    }
+
+    /**
      * Returns data from session or default instead
      *
      * @param string $key
+     * @param mixed $default
      * @return mixed value of $_SESSION[$key]
      */
     public function get($key, $default = null)

@@ -96,3 +96,4 @@ class Router
         return $string;
     }
 }
+

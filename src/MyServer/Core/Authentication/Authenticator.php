@@ -3,7 +3,6 @@ namespace MyServer\Core\Authentication;
 
 use \Exception;
 use MyServer\Core\Db;
-use MyServer\Core\Request;
 use MyServer\Core\ServiceContainer;
 use MyServer\Core\Session;
 
@@ -14,9 +13,9 @@ use MyServer\Core\Session;
 class Authenticator
 {
     /**
-     * @var Request
+     * @var array
      */
-    private $authData;
+    private $authParams;
 
     /**
      * @var Session
@@ -29,15 +28,16 @@ class Authenticator
     private $db;
 
     /**
-     * @param $authData
+     * @param $authParams
      * @throws Exception
      */
-    public function __construct($authData) {
-        if (empty($authData)) {
+    public function __construct($authParams)
+    {
+        if (empty($authParams)) {
             throw new Exception('No authentication data provided');
         }
 
-        $this->authData = $authData;
+        $this->authParams = $authParams;
         $this->session = ServiceContainer::get('session');
         $this->db = ServiceContainer::get('db');
     }
@@ -69,8 +69,8 @@ class Authenticator
      */
     private function getUserFromSession()
     {
-        if (!empty($this->authData['sessionId'])) {
-            $this->session->setId($this->authData['sessionId']);
+        if (!empty($this->authParams['sessionId'])) {
+            $this->session->setId($this->authParams['sessionId']);
             $this->session->start();
 
             return $this->session->get('user');
@@ -88,17 +88,24 @@ class Authenticator
     private function getUserFromNetwork()
     {
         $user = null;
-        if (!empty($this->authData['personId']) && !empty($this->authData['networkKey']) && !empty($this->authData['authKey'])) {
-            $authenticated = $this->checkNetworkAuthentication(
-                $this->authData['personId'],
-                $this->authData['networkKey'],
-                $this->authData['authKey']
+        if (!empty($this->authParams['personId']) &&
+            !empty($this->authParams['networkKey']) &&
+            !empty($this->authParams['authKey']))
+        {
+            $authenticationProvider = $this->getAuthentificationProvider($this->authParams['networkKey']);
+            if (!$authenticationProvider) {
+                return null;
+            }
+
+            $authenticated = $authenticationProvider->checkAuthKey(
+                $this->authParams['personId'],
+                $this->authParams['authKey']
             );
 
             if ($authenticated) {
                 $user = $this->db->fetchOneBy('user', [
-                    'person_id' => $this->authData['personId'],
-                    'auth_key' => $this->authData['authKey']
+                    'person_id' => $this->authParams['personId'],
+                    'auth_key' => $this->authParams['authKey']
                 ]);
             }
         }
@@ -107,25 +114,21 @@ class Authenticator
     }
 
     /**
-     * @param $personId
      * @param $network
-     * @param $authKey
-     * @return bool
+     * @return AuthenticationProviderInterface
      */
-    private function checkNetworkAuthentication($personId, $network, $authKey)
+    private function getAuthentificationProvider($network)
     {
         switch($network) {
             case 'vk':
-                $authenticationProvider = $this->getVkontakteAuthenticator();
+                return $this->getVkontakteAuthenticator();
                 break;
             case 'odnoklassniki':
-                $authenticationProvider = $this->getOdnoklassnikiAuthenticator();
+                return $this->getOdnoklassnikiAuthenticator();
                 break;
             default:
-                return false;
+                return null;
         }
-
-        return $authenticationProvider->checkAuthKey($personId, $authKey);
     }
 
     /**

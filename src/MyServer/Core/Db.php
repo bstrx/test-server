@@ -117,6 +117,7 @@ class Db
      *
      * @param string $tableName
      * @param array $deleteOptions
+     * @return PDOStatement
      */
     public function delete($tableName, $deleteOptions = [])
     {
@@ -160,6 +161,7 @@ class Db
      * @param string $tableName
      * @param array $newValues
      * @param array $conditions
+     * @return PDOStatement
      */
     public function update($tableName, array $newValues, array $conditions = [])
     {
@@ -183,6 +185,7 @@ class Db
      * @param string $tableName
      * @param array $fetchOptions
      * @param integer $limit
+     * @param array $orderBy
      * @return array
      */
     private function getStatement($tableName, $fetchOptions = [], $limit = null, $orderBy = [])
@@ -212,7 +215,7 @@ class Db
     }
 
     /**
-     * Creates connection if it doesn't exist
+     * Creates connection if it does not exist
      *
      * @return PDO
      */
@@ -242,3 +245,4 @@ class Db
         return [$updateKeys, $updateValues];
     }
 }
+

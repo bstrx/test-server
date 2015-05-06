@@ -12,52 +12,38 @@ class UserController extends Controller
     /**
      * Returns common user's info like money and level and key/value properties
      *
-     * Request example:
-     * 'user' => [
-     *     'info' => [
-     *         'money'
-     *         'level'
-     *     ],
-     *     'properties' => [
-     *         'customPropertyKey',
-     *         'anotherKey'
-     *     ]
-     * ]
-     *
      * @param Request $request
      * @return array same as request, but with values for requested keys
      */
     public function getInfoAction(Request $request)
     {
-        $userRequest = $request->get('user');
-        if (!$userRequest || !is_array($userRequest)) {
-            throw new \Exception('Invalid data format');
-        }
-
-        $response = ['user' => []];
-        $userId = $request->get('id');
+        $response = [];
+        $userId = $this->getUserId();
 
         //get info
-        if (!empty($userRequest['info']) && is_array($userRequest['info'])) {
+        $requestedInfo = $request->get('info');
+        if (!empty($requestedInfo) && is_array($requestedInfo)) {
             $cacheKey = $this->getUserInfoCacheKey($userId);
             $userInfo = $this->getMemcached()->get($cacheKey);
             if (!$userInfo) {
-                $userInfo = $this->getInfo($userId, $userRequest['info']);
+                $userInfo = $this->getInfo($userId, $requestedInfo);
                 $this->getMemcached()->set($cacheKey, $userInfo);
             }
 
-            $response['user']['info'] = $userInfo;
+            $response['info'] = $userInfo;
         }
 
         //get properties
-        if (!empty($userRequest['properties']) && is_array($userRequest['properties'])) {
+        $requestedProperties = $request->get('properties');
+        if (!empty($requestedProperties) && is_array($requestedProperties)) {
             $cacheKey = $this->getUserPropertyCacheKey($userId);
             $userProperties = $this->getMemcached()->get($cacheKey);
             if (!$userProperties) {
-                $userProperties = $this->getProperties($userId, $userRequest['properties']);
+                $userProperties = $this->getProperties($userId, $requestedProperties);
                 $this->getMemcached()->set($cacheKey, $userProperties);
             }
-            $response['user']['properties'] = $userProperties;
+
+            $response['properties'] = $userProperties;
         }
 
         return $response;
@@ -66,34 +52,18 @@ class UserController extends Controller
     /**
      * Updates user's info and key/value properties
      *
-     * Request example:
-     * user => [
-     *     info => [
-     *         'money' => 1600,
-     *         'level' => 80
-     *     ],
-     *     properties => [
-     *         'customPropertyKey' => 'value1',
-     *         'anotherKey' => 'value2'
-     *     ]
-     * ]
-     *
      * @param Request $request
      */
     public function updateInfoAction(Request $request)
     {
-        $userRequest = $request->get('user');
-        if (!$userRequest || !is_array($userRequest)) {
-            return;
+        $infoToUpdate = $request->get('info');
+        if (!empty($infoToUpdate) && is_array($infoToUpdate)) {
+            $this->updateInfo($this->getUserId(), $infoToUpdate);
         }
 
-        $usedId = $request->get('id');
-        if (!empty($userRequest['info']) && is_array($userRequest['info'])) {
-            $this->updateInfo($usedId, $userRequest['info']);
-        }
-
-        if (!empty($userRequest['properties']) && is_array($userRequest['properties'])) {
-            $this->updateProperties($usedId, $userRequest['properties']);
+        $propertiesToUpdate = $request->get('properties');
+        if (!empty($propertiesToUpdate) && is_array($propertiesToUpdate)) {
+            $this->updateProperties($this->getUserId(), $propertiesToUpdate);
         }
     }
 
@@ -130,13 +100,13 @@ class UserController extends Controller
     private function getProperties($userId, array $requiredProperties)
     {
         $result = [];
-        $userProperties = $this->getDb()->fetchBy('user_property', ['id' => $userId], 1);
+        $userProperties = $this->getDb()->fetchBy('user_property', ['user_id' => $userId]);
 
-        foreach ($requiredProperties as $field) {
-            if (isset($userProperties[$field])) {
-                $result[$field] =  $userProperties[$field];
+        foreach ($userProperties as $property) {
+            if (in_array($property['name'], $requiredProperties)) {
+                $result[$property['name']] = $property['value'];
             } else {
-                $result[$field] = null;
+                $result[$property['name']] = null;
             }
         }
 
@@ -225,3 +195,4 @@ class UserController extends Controller
         return 'user_property_' . $userId;
     }
 }
+

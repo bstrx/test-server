@@ -46,4 +46,13 @@ abstract class Controller
     {
         return ServiceContainer::get('session')->get('user');
     }
+
+    /**
+     * Quick shortcut to get user id
+     * @return int
+     */
+    public function getUserId()
+    {
+        return $this->getUser()['id'];
+    }
 }

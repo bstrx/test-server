@@ -11,9 +11,18 @@ class Request
     const POST_METHOD = 'POST';
 
     /**
+     * Common data for controllers
+     *
      * @var array
      */
     public $data;
+
+    /**
+     * Data for authentication
+     *
+     * @var array
+     */
+    public $authParams;
 
     /**
      * @var string
@@ -26,7 +35,9 @@ class Request
     public function __construct()
     {
         $this->method = strtoupper($_SERVER['REQUEST_METHOD']);
-        $this->data = json_decode(file_get_contents("php://input"), true);
+        $requestContent = json_decode(file_get_contents("php://input"), true);
+        $this->authParams = isset($requestContent['auth']) ? $requestContent['auth'] : null;
+        $this->data = isset($requestContent['data']) ? $requestContent['data'] : null;
     }
 
     /**
@@ -51,6 +62,14 @@ class Request
         foreach ($requestArray as $key => $value) {
             $this->data[$key] = $value;
         }
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getAuthParams()
+    {
+        return $this->authParams;
     }
 
     /**

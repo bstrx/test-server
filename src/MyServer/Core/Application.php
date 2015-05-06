@@ -20,7 +20,7 @@ class Application
             $this->initializeServices();
             $request = new Request();
 
-            $authenticator = new Authenticator($request->get('auth'));
+            $authenticator = new Authenticator($request->getAuthParams());
             $user = $authenticator->authenticateUser();
             if (!$user) {
                 throw new Exception('Invalid user');
@@ -30,11 +30,9 @@ class Application
             $action = $router->getAction();
             $responseData = $router->getControllerInstance()->$action($request);
 
-            return ($responseData);
             $response = new Response($responseData);
         } catch (Exception $e){
-            return ($e->getMessage());
-            $response = new Response($e->getMessage(), false);
+            $response = new Response($e->getMessage(), Response::ERROR);
         }
 
         echo $response->getJson();
@@ -78,7 +76,7 @@ class Application
             ],
             'database' => [
                 'db' => 'myserver',
-                'user' => 'myuser',
+                'user' => 'user',
                 'password' => 'password'
             ]
         ];
