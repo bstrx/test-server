@@ -19,10 +19,12 @@ CREATE TABLE user_property
     PRIMARY KEY (user_id, property)
 );
 
-INSERT INTO user (person_id, auth_key, network_key) VALUES (
+INSERT INTO user (person_id, auth_key, network_key, money, level) VALUES (
   '03d59e663c1af9ac33a9949d1193505a',
   '3097e26b7f3cbdb920765a6c3d2ba94985e465c',
-  'vk'
+  'vk',
+  1500
+  80
 );
 
 INSERT INTO user_property (user_id, name, value) VALUES (

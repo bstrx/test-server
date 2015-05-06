@@ -58,6 +58,19 @@ class Authenticator
             }
         }
 
+        if ($user) {
+            $fieldsToUpdate = [];
+            $currentDate = new \DateTime();
+            $lastVisit = new \DateTime($user['last_visit']);
+            if ($currentDate->format('d.m.Y') == $lastVisit->add(new \DateInterval('P1D'))->format('d.m.Y')) {
+                $user['days_in_row']++;
+                $fieldsToUpdate['days_in_row'] = $user['days_in_row'];
+            }
+
+            $user['last_visit'] = $fieldsToUpdate['last_visit'] = $currentDate->format("Y-m-d H:i:s");
+            $this->db->update('user', $fieldsToUpdate, ['id' => $user['id']]);
+        }
+
         return $user;
     }
 
