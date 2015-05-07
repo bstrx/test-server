@@ -1,6 +1,14 @@
 <?php
+/**
+ * This is the example of two requests:
+ * 1) GET info and properties using social network authentication
+ * 2) SET info and properties using session id identification
+ */
 
-$data = [
+$serverUrl = 'http://test-server.dev';
+
+//GET info and properties
+$requestData = [
     'auth' => [
         'personId' => '03d59e663c1af9ac33a9949d1193505a',
         'networkKey' => 'vk',
@@ -13,11 +21,16 @@ $data = [
     ]
 ];
 
-executeAndPrint('http://test-server.dev/user/get-info', $data);
+$url = $serverUrl . '/user/get-info';
+$responseData = executeRequest($url, $requestData);
+printFormated($requestData, $responseData);
 
-$data = [
+echo "<br><span style='color:orangered'>!!! Now let's update some user values with the session id assigned to us in previous request !!!</span><br>";
+
+//SET info and properties
+$requestData = [
     'auth' => [
-        'sessionId' => 'some wrong session id',
+        'sessionId' => $responseData['auth']['sessionId'],
     ],
 
     'data' => [
@@ -25,14 +38,23 @@ $data = [
             'level' => 55
         ],
         'properties' => [
-            'someProp' => 'Not very long text',
-            'customProp2' => 3217854
+            'someProperty' => 'Not very long text!!',
+            'anotherProperty' => 3217854,
+            'newProperty' => 'new value'
         ]
     ]
 ];
-//TODO
 
-function processCurlJsonRequest($url, $data)
+$url = $serverUrl . '/user/update-info';
+$responseData = executeRequest($url, $requestData);
+printFormated($requestData, $responseData);
+
+/**
+ * @param string $url
+ * @param array $data
+ * @return array
+ */
+function executeRequest($url, array $data)
 {
     $data_string = json_encode($data);
     $ch = curl_init($url);
@@ -46,16 +68,19 @@ function processCurlJsonRequest($url, $data)
     return json_decode($result, true);
 }
 
-function executeAndPrint($url, $data)
+/**
+ * @param array $requestData
+ * @param array $responseData
+ */
+function printFormated(array $requestData, array $responseData)
 {
+    echo '<pre>';
     echo '----------------------------Request----------------------------';
-    echo '<pre>';
-    print_r($data);
-    echo '</pre>';
     echo '<br>';
-
+    print_r($requestData);
+    echo '<br>';
     echo '----------------------------Response----------------------------';
-    echo '<pre>';
-    print_r(processCurlJsonRequest($url, $data));
+    echo '<br>';
+    print_r($responseData);
     echo '</pre>';
 }

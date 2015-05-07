@@ -105,8 +105,6 @@ class UserController extends Controller
         foreach ($userProperties as $property) {
             if (in_array($property['name'], $requiredProperties)) {
                 $result[$property['name']] = $property['value'];
-            } else {
-                $result[$property['name']] = null;
             }
         }
 
@@ -154,11 +152,11 @@ class UserController extends Controller
         //update properties that already exist
         if ($userProperties) {
             foreach ($userProperties as $propertyName => $propertyValue) {
-                if (isset($newProperties[$propertyName])) {
+                if ($newProperties && isset($newProperties[$propertyName])) {
                     $this->getDb()->update(
-                        'user',
+                        'user_property',
                         ['value' => $newProperties[$propertyName]],
-                        ['id' => $userId, ['property' => $propertyName]]
+                        ['user_id' => $userId, 'name' => $propertyName]
                     );
 
                     unset($newProperties[$propertyName]);
@@ -170,7 +168,7 @@ class UserController extends Controller
         foreach ($newProperties as $propertyName => $propertyValue) {
             $this->getDb()->insert(
                 'user_property',
-                ['user_id' => $userId, 'property' => $propertyName, 'value' => $propertyValue]
+                ['user_id' => $userId, 'name' => $propertyName, 'value' => $propertyValue]
             );
         }
 

@@ -82,7 +82,8 @@ class Response
     private function getArray()
     {
         return [
-            'auth' => ['session_id' => $this->session->getId()],
+            'status' => $this->getStatus(),
+            'auth' => ['sessionId' => $this->session->getId()],
             'data' => $this->getData()
         ];
     }
